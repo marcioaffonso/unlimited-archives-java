@@ -1,0 +1,25 @@
+*.class
+*.DS_Store
+
+# Package Files
+*.jar
+*.war
+
+# gradle
+gradle.properties
+.gradle
+build
+out
+bin
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea
+
+# Eclipse
+.settings
+.classpath
+.project

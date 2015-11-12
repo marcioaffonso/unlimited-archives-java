@@ -1,0 +1,17 @@
+apply plugin:'application'
+mainClassName = "com.example.HelloWorldServer"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(':')
+    compile group: 'com.github.codingricky', name: 'spark-core-16', version: '1.1'
+    compile group: 'org.freemarker', name: 'freemarker', version: '2.3.19'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.6'
+    compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version: '1.9.13'
+}
+
+run.systemProperty 'API_KEY', "$System.env.API_KEY" != "null" ? "$System.env.API_KEY" : ''
+run.systemProperty 'API_SECRET', "$System.env.API_SECRET" != "null" ? "$System.env.API_SECRET" : ''

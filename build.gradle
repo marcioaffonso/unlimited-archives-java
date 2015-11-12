@@ -1,0 +1,119 @@
+plugins {
+    id "com.github.hierynomus.license" version "0.11.0"
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+group = 'com.tokbox'
+archivesBaseName = 'opentok-server-sdk'
+// TODO: how do we increment this before/after a release for deployment and development?
+version = '2.3.2-alpha.1'
+
+sourceCompatibility = 1.6
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+javadoc {
+    title = 'OpenTok Java SDK Reference'
+    destinationDir = file('docs')
+    exclude '**/util/**', '**/constants/**'
+    options {
+        locale 'en_US'
+        setMemberLevel JavadocMemberLevel.PUBLIC
+    }
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'com.ning', name: 'async-http-client', version: '[1.6.1,1.9['
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '[2.3.1,2.99999)'
+    compile group: 'commons-validator', name: 'commons-validator', version: '[1.4.0,1.99999)'
+    compile group: 'commons-codec', name: 'commons-codec', version: '[1.9,1.99999]'
+}
+
+apply plugin: 'license'
+license {
+    header rootProject.file('codequality/HEADER')
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+ext.isReleaseVersion = hasProperty('isReleaseVersion') ? isReleaseVersion : false
+signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+ext.ossrhUsername = hasProperty('ossrhUsername') ? ossrhUsername : 'dummyuser'
+ext.ossrhPassword = hasProperty('ossrhPassword') ? ossrhPassword : 'dummypass'
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
+              authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+              authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'OpenTok Java SDK'
+                packaging 'jar'
+                description 'The OpenTok Ruby SDK lets you generate sessions and tokens for OpenTok applications. This version of the SDK also includes support for working with OpenTok 2.0 archives.'
+                url 'http://www.tokbox.com/opentok'
+
+                scm {
+                    connection 'scm:git:https://github.com/opentok/Opentok-Java-SDK.git'
+                    developerConnection 'scm:git:https://github.com/opentok/Opentok-Java-SDK.git'
+                    url 'opentok.github.io/opentok-java-sdk'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'http://www.opensource.org/licenses/mit-license'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'manasdpradhan'
+                        name 'Manas Pradhan'
+                        email 'manas@tokbox.com'
+                        organization 'TokBox, Inc.'
+                    }
+                    developer {
+                        id 'aoberoi'
+                        name 'Ankur Oberoi'
+                        email 'aoberoi@gmail.com'
+                        organization 'TokBox, Inc.'
+                    }
+                }
+            }
+        }
+    }
+}
+
+test {
+    maxHeapSize = "1024m"
+}
